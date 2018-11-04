@@ -19,8 +19,6 @@ func checkError(err error) {
 	}
 }
 
-//https://www.york.ac.uk/teaching/cws/wws/webpage1.html,http://web.ics.purdue.edu/~gchopra/class/public/pages/webdesign/05_simple.html,https://kbroman.org/simple_site/
-
 func main() {
 	fmt.Println("Hello,separate URLs by comma please")
 	wordToFind := flag.String("q", "go", "word to find from url")
@@ -45,6 +43,8 @@ func main() {
 	tc := counter.NewCounter()
 	for _, url := range strings.Split(urlArgs, ",") {
 		if checkURL(url) == true {
+
+			wg.Add(1)
 			ch <- struct{}{}
 
 			go parseSite(url, wordToFind, &wg, tc)
@@ -60,7 +60,6 @@ func main() {
 }
 
 func parseSite(url string, wordToFind *string, wg *sync.WaitGroup, tc *counter.TotalCounter) {
-	wg.Add(1)
 	defer wg.Done()
 	resp, err := http.Get(url)
 	if err != nil {
