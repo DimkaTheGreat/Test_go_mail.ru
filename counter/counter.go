@@ -21,3 +21,7 @@ func (tc *TotalCounter) SafeAdd(count int) {
 	tc.Total += count
 
 }
+
+func (tc *TotalCounter) parseURL(url string, wordToFind *string) {
+
+}

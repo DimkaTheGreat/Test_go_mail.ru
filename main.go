@@ -24,7 +24,22 @@ func main() {
 	wordToFind := flag.String("q", "go", "word to find from url")
 	k := flag.Int("k", 5, "number of gouroutines")
 	flag.Parse()
-	var wg sync.WaitGroup
+
+	totalURLsCount()
+	parser(*k, wordToFind, findStartOfUrls())
+
+}
+
+func checkURL(url string) bool {
+	_, err := http.Get(url)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func totalURLsCount() {
 	urlArgs := ""
 
 	for _, args := range os.Args {
@@ -38,9 +53,15 @@ func main() {
 			totalURL++
 		}
 	}
-	fmt.Println("Total URLs: ", totalURL)
-	ch := make(chan struct{}, *k)
+	fmt.Println("Total URLs : ", totalURL)
+}
+
+func parser(k int, wordToFind *string, urlArgs string) {
+
+	var wg sync.WaitGroup
+	ch := make(chan struct{}, k)
 	tc := counter.NewCounter()
+
 	for _, url := range strings.Split(urlArgs, ",") {
 		if checkURL(url) == true {
 
@@ -57,6 +78,17 @@ func main() {
 	wg.Wait()
 	fmt.Println("Total:", tc.Total)
 	fmt.Println("Done")
+}
+
+func findStartOfUrls() string {
+	urlArgs := ""
+
+	for _, args := range os.Args {
+		if strings.HasPrefix(args, "http") == true {
+			urlArgs = args
+		}
+	}
+	return urlArgs
 }
 
 func parseSite(url string, wordToFind *string, wg *sync.WaitGroup, tc *counter.TotalCounter) {
@@ -79,13 +111,4 @@ func parseSite(url string, wordToFind *string, wg *sync.WaitGroup, tc *counter.T
 	tc.SafeAdd(counter)
 	fmt.Println("Counts for: ", url, " -- ", counter)
 
-}
-
-func checkURL(url string) bool {
-	_, err := http.Get(url)
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
 }
